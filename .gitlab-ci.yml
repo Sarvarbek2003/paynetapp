@@ -1,0 +1,25 @@
+stages:
+  - "build"
+  - "push"
+  - "deploy"
+
+dockerimage-build:
+  stage: "build"
+  script:
+    - cd $CI_PROJECT_DIR
+    - pwd
+    - docker rmi k8s1.agrobank.uz:5000/authorizatisya:latest || true
+    - docker build -t k8s1.agrobank.uz:5000/authorizatisya:latest .
+
+dockerimage-push:
+  stage: "push"
+  script:
+    - docker images
+    - docker push k8s1.agrobank.uz:5000/authorizatisya:latest
+k8sjob-deploy:
+  stage: "deploy"
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context agrobank.uz/web/admin-panel/authatization:authorization-agentc
+    - kubectl apply -f deployment.yaml
+    - kubectl rollout restart deployment/authorizatsiya
